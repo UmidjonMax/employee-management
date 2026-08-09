@@ -24,7 +24,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Description cannot be longer than 500 characters";
     }
     if (empty($errors)) {
-        $sql = "
+        try {
+            $sql = "
         INSERT INTO departments (
             name,
             description
@@ -35,14 +36,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         )
     ";
 
-        $statement = $pdo->prepare($sql);
+            $statement = $pdo->prepare($sql);
 
-        $statement->execute([
-            "name" => $name,
-            "description" => $description
-        ]);
-        header("location: departments.php");
-        exit;
+            $statement->execute([
+                    "name" => $name,
+                    "description" => $description
+            ]);
+            header("location: departments.php");
+            exit;
+        } catch (PDOException $e) {
+            $errors[] = $e->getMessage();
+        }
+
     }
 }
 ?>
