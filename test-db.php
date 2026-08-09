@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/config/database.php';
+$pdo = require __DIR__ . '/config/database.php';
 
 if (isset($pdo)) {
     echo "Database connected successfully\n";
