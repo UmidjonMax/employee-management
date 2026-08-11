@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 $pdo = require __DIR__ . '/config/database.php';
 if (isset($pdo)) {
     $statement = $pdo->query('SELECT
@@ -53,6 +55,22 @@ $departments = $statement->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 7px;
         }
 
+        .alert {
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #b71c1c;
+        }
+
         .card {
             background: white;
             border-radius: 12px;
@@ -95,13 +113,33 @@ $departments = $statement->fetchAll(PDO::FETCH_ASSOC);
             color: #1565c0;
         }
 
-        .delete {
+        .delete-btn {
+            background: none;
+            border: none;
+            padding: 0;
             color: #c62828;
+            cursor: pointer;
+            font: inherit;
         } </style>
 </head>
 <body>
 <div class="container">
     <div class="header"><h1>Departments</h1> <a href="department-create.php" class="btn"> Add Department </a></div>
+    <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert success">
+            <?= htmlspecialchars($_SESSION['success']) ?>
+        </div>
+
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert error">
+            <?= htmlspecialchars($_SESSION['error']) ?>
+        </div>
+
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
     <div class="card"> <?php if (count($departments) > 0): ?>
             <table>
                 <thead>
@@ -120,8 +158,27 @@ $departments = $statement->fetchAll(PDO::FETCH_ASSOC);
                         <td> <?= htmlspecialchars($department['DESCRIPTION'] ?? '') ?> </td>
                         <td> <?= htmlspecialchars($department['CREATED_AT']) ?> </td>
                         <td class="actions"><a href="department-edit.php?id=<?= $department['ID'] ?>" class="edit">
-                                Edit </a> <a href="department-delete.php?id=<?= $department['ID'] ?>" class="delete">
-                                Delete </a></td>
+                                Edit </a>
+                            <form
+                                    action="department-delete.php"
+                                    method="POST"
+                                    style="display: inline;"
+                            >
+                                <input
+                                        type="hidden"
+                                        name="id"
+                                        value="<?= htmlspecialchars((string)$department['ID']) ?>"
+                                >
+
+                                <button
+                                        type="submit"
+                                        class="delete-btn"
+                                        onclick="return confirm('Are you sure you want to delete this department?')"
+                                >
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
                     </tr> <?php endforeach; ?> </tbody>
             </table> <?php else: ?>
             <div class="empty"> No departments found.</div> <?php endif; ?> </div>
