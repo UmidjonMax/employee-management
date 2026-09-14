@@ -1,6 +1,12 @@
 <?php
 
-$pdo = require __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/Department.php';
+
+$database = new Database();
+$pdo = $database->getConnection();
+
+$department = new Department($pdo);
 
 $errors = [];
 
@@ -10,15 +16,13 @@ if (!$id || $id < 1) {
     die('Invalid department ID');
 }
 
-$statement = $pdo->prepare('SELECT * FROM departments WHERE id = :id');
-$statement->execute(['id' => $id]);
-$department = $statement->fetch(PDO::FETCH_ASSOC);
-if (!$department) {
+$departmentData = $department->findById($id);
+if (!$departmentData) {
     die('Department not found');
 }
 
-$name = $department['NAME'];
-$description = $department['DESCRIPTION'] ?? '';
+$name = $departmentData['NAME'];
+$description = $departmentData['DESCRIPTION'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
@@ -38,12 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($errors)) {
         try {
-            $statement = $pdo->prepare('UPDATE departments SET name = :name, description = :description WHERE id = :id');
-            $statement->execute(['name' => $name, 'description' => $description, 'id' => $id]);
+            $department->update($id, $name, $description);
             header('Location: departments.php');
             exit;
         } catch (PDOException $e) {
-            $errors[] = "Department already exists";
+            $errors[] = "Department already exists" . $e->getMessage();
         }
     }
 }

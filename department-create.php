@@ -1,55 +1,42 @@
 <?php
 
-$pdo = require __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/Department.php';
+
+$database = new Database();
+$pdo = $database->getConnection();
+
+$department = new Department($pdo);
 
 $errors = [];
 
 $name = '';
 $description = '';
 
-if($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST["name"] ?? '');
-    $description = trim($_POST["description"] ?? '');
+if($_SERVER["REQUEST_METHOD"] == "POST") { 
+    $name = trim($_POST["name"] ?? ''); 
+    $description = trim($_POST["description"] ?? ''); 
+    if ($name == '') { 
+        $errors[] = "Name cannot be empty"; 
+        } if ($description == '') { 
+            $errors[] = "Description cannot be empty"; 
+            } if (strlen($name) > 100) { 
+                $errors[] = "Name cannot be longer than 100 characters"; 
+                } if (strlen($description) > 500) { 
+                    $errors[] = "Description cannot be longer than 500 characters"; }
 
-    if ($name == '') {
-        $errors[] = "Name cannot be empty";
-    }
-    if ($description == '') {
-        $errors[] = "Description cannot be empty";
-    }
-    if (strlen($name) > 100) {
-        $errors[] = "Name cannot be longer than 100 characters";
-    }
-    if (strlen($description) > 500) {
-        $errors[] = "Description cannot be longer than 500 characters";
-    }
-    if (empty($errors)) {
-        try {
-            $sql = "
-        INSERT INTO departments (
-            name,
-            description
-        )
-        VALUES (
-            :name,
-            :description
-        )
-    ";
+if (empty($errors)){
+    try{
+        $department->create($name, $description);
 
-            $statement = $pdo->prepare($sql);
-
-            $statement->execute([
-                    "name" => $name,
-                    "description" => $description
-            ]);
-            header("location: departments.php");
-            exit;
-        } catch (PDOException $e) {
-            $errors[] = $e->getMessage();
+        header('Location: departments.php');
+        exit;
+    } catch (PDOException $e) {
+        $errors[] = $e->getMessage();
         }
-
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -2,7 +2,13 @@
 
 session_start();
 
-$pdo = require __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/Department.php';
+
+$database = new Database();
+$pdo = $database->getConnection();
+
+$department = new Department($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: /departments.php');
@@ -15,8 +21,7 @@ if (!$id || $id <1){
     exit;
 }
 try {
-    $statement = $pdo->prepare('DELETE FROM departments WHERE id = :id');
-    $statement->execute(['id' => $id]);
+    $department->delete($id);
     $_SESSION['success'] = 'Department deleted successfully';
 } catch (PDOException $e) {
     $_SESSION['error'] = 'Department could not be deleted. It may contain employees.';

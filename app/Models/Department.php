@@ -8,7 +8,7 @@ class Department {
     }
 
     public function getAll(): array {
-        $statement = $this->pdo->query("SELECT id, name, description FROM departments ORDER BY id");
+        $statement = $this->pdo->query("SELECT id, name, description, created_at FROM departments ORDER BY id");
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     } 
 
@@ -25,7 +25,11 @@ class Department {
     }
 
     public function update(int $id, string $name, ?string $description): bool {
-        $statement = $this->pdo->prepare("UPDATE departments SET name = :name, description = :description, updated_at = CURRENT_TIMESTAMP WHERE id = :id");
+        $statement = $this->pdo->prepare("UPDATE departments 
+        SET 
+            name = :name, 
+            description = :description
+        WHERE id = :id");
         return $statement->execute(['id' => $id, 'name' => $name, 'description' => $description]);
     }
 
