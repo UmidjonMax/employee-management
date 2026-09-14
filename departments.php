@@ -2,18 +2,16 @@
 
 session_start();
 
-$pdo = require __DIR__ . '/config/database.php';
-if (isset($pdo)) {
-    $statement = $pdo->query('SELECT
-        id,
-        name,
-        description,
-        created_at
-    FROM departments
-    ORDER BY id');
-}
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/Department.php';
 
-$departments = $statement->fetchAll(PDO::FETCH_ASSOC);
+$database = new Database();
+$pdo = $database->getConnection();
+
+$departmentModel = new Department($pdo);
+$departments = $departmentModel->getAll();
+
+$departments = $departmentModel->getAll();
 ?>
 
 <!DOCTYPE html>
