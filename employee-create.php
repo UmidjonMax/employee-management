@@ -1,6 +1,12 @@
 <?php
 
-$pdo = require __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/Employee.php';
+
+$database = new Database();
+$pdo = $database->getConnection();
+
+$employeeModel = new Employee($pdo);
 
 $errors = [];
 
@@ -14,7 +20,8 @@ $salary = '';
 $hireDate = date('Y-m-d');
 $status = 'ACTIVE';
 
-$departments = $pdo ->query("SELECT id, name FROM departments order by id")->fetchAll(PDO::FETCH_ASSOC);
+$departments = $pdo->query('SELECT id, name FROM departments ORDER BY name')
+    ->fetchAll(PDO::FETCH_ASSOC);
 
 if($_SERVER["REQUEST_METHOD"] === "POST") {
     $firstName = trim($_POST['first_name'] ?? '');
@@ -26,10 +33,6 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
     $salary = trim($_POST['salary'] ?? '');
     $hireDate = date('Y-m-d');
     $status = trim($_POST['status'] ?? '');
-
-    echo '<pre>';
-    var_dump($_POST);
-    echo '</pre>';
 
     if ($firstName === '') {
         $errors[] = 'First name is required.';
@@ -87,44 +90,17 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
 
         try {
 
-            $sql = "
-            INSERT INTO employees (
-                first_name,
-                last_name,
-                email,
-                phone,
-                department_id,
-                position,
-                salary,
-                hire_date,
-                status
-            )
-            VALUES (
-                :first_name,
-                :last_name,
-                :email,
-                :phone,
-                :department_id,
-                :position,
-                :salary,
-                TO_DATE(:hire_date, 'YYYY-MM-DD'),
-                :status
-            )
-        ";
-
-            $statement = $pdo->prepare($sql);
-
-            $statement->execute([
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'email' => $email,
-                'phone' => $phone !== '' ? $phone : null,
-                'department_id' => $departmentId,
-                'position' => $position,
-                'salary' => $salary !== '' ? $salary : null,
-                'hire_date' => $hireDate,
-                'status' => $status
-            ]);
+            $employees = $employeeModel->create(
+                $firstName,
+                $lastName,
+                $phone,
+                $email,
+                $departmentId,
+                $position,
+                $salary,
+                $hireDate,
+                $status
+            );
 
             header('Location: employees.php');
             exit;
@@ -136,6 +112,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
+                
 <!DOCTYPE html>
 <html lang="en">
 
