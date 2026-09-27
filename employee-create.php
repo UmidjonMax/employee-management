@@ -107,7 +107,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST") {
 
         } catch (PDOException $e) {
 
-            $errors[] = 'Employee could not be created.';
+            $errors[] = 'Employee could not be created: ' . $e->getMessage();
         }
     }
 }

@@ -2,11 +2,13 @@
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/app/Models/Employee.php';
+require_once __DIR__ . '/app/Controllers/EmployeeController.php';
 
 $database = new Database();
 $pdo = $database->getConnection();
 
 $employeeModel = new Employee($pdo);
+$employeeController = new EmployeeController($employeeModel);
 
 $employees = $employeeModel->getAll();
 ?>
