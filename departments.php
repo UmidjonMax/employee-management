@@ -10,8 +10,6 @@ $pdo = $database->getConnection();
 
 $departmentModel = new Department($pdo);
 $departments = $departmentModel->getAll();
-
-$departments = $departmentModel->getAll();
 ?>
 
 <!DOCTYPE html>

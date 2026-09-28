@@ -1,27 +1,18 @@
 <?php
 
-$pdo = require __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/Employee.php';
+
+$database = new Database();
+$pdo = $database->getConnection();
+
+$employeeModel = new Employee($pdo);
 
 $errors = [];
 
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-$statement = $pdo->prepare("SELECT
-        id,
-        first_name,
-        last_name,
-        email,
-        phone,
-        department_id,
-        position,
-        salary,
-        TO_CHAR(hire_date, 'YYYY-MM-DD') AS hire_date,
-        status
-    FROM employees
-    WHERE id = :id");
-
-$statement->execute(['id' => $id]);
-$employee = $statement->fetch(PDO::FETCH_ASSOC);
+$employee = $employeeModel->findById($id);
 
 if (!$employee) {
     die('Employee not found');
@@ -116,36 +107,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
 
-            $sql = "
-                UPDATE employees
-                SET
-                    first_name = :first_name,
-                    last_name = :last_name,
-                    email = :email,
-                    phone = :phone,
-                    department_id = :department_id,
-                    position = :position,
-                    salary = :salary,
-                    hire_date = TO_DATE(:hire_date, 'YYYY-MM-DD'),
-                    status = :status,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = :id
-            ";
-
-            $statement = $pdo->prepare($sql);
-
-            $statement->execute([
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'email' => $email,
-                'phone' => $phone !== '' ? $phone : null,
-                'department_id' => $departmentId,
-                'position' => $position,
-                'salary' => $salary !== '' ? $salary : null,
-                'hire_date' => $hireDate,
-                'status' => $status,
-                'id' => $id
-            ]);
+            $employees = $employeeModel->update(
+                $id,
+                $firstName,
+                $lastName,
+                $phone,
+                $email,
+                $departmentId,
+                $position,
+                $salary,
+                $hireDate,
+                $status
+            );
 
             header('Location: employees.php');
             exit;

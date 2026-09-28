@@ -1,27 +1,16 @@
 <?php
 
-$pdo = require __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/Employee.php';
+require_once __DIR__ . '/app/Controllers/EmployeeController.php';
 
-$statement = $pdo->query("
-    SELECT
-        e.id,
-        e.first_name,
-        e.last_name,
-        e.email,
-        e.phone,
-        e.position,
-        e.salary,
-        e.hire_date,
-        e.status,
-        d.name AS department_name
-    FROM employees e
-    LEFT JOIN departments d
-        ON d.id = e.department_id
-    ORDER BY e.id
-");
+$database = new Database();
+$pdo = $database->getConnection();
 
-$employees = $statement->fetchAll(PDO::FETCH_ASSOC);
+$employeeModel = new Employee($pdo);
+$employeeController = new EmployeeController($employeeModel);
 
+$employees = $employeeModel->getAll();
 ?>
 
 <!DOCTYPE html>
